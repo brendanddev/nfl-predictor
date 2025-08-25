@@ -10,7 +10,6 @@ See https://docs.sleeper.com/ for API documentation.
 Brendan Dileo, August 2025
 """
 
-from config import USER_ID, LEAGUE_ID
 import requests
 import json
 
@@ -40,6 +39,11 @@ def get_state():
 def get_user(identifier: str):
     """ Retrieves a user object """
     url = f"{BASE_URL}/user/{identifier}"
+    return send_get(url)
+
+def get_all_users(league_id):
+    """ Retrieves all users in a league """
+    url = f"{BASE_URL}/league/{league_id}/users"
     return send_get(url)
 
 def get_user_leagues(user_id, sport="nfl", season="2025"):
@@ -75,22 +79,5 @@ def get_trending_players(sport="nfl", type="adds", lookback_hours=24, limit=25):
         "limit": limit
     }
     return send_get(url, params=params)
-
-
-
-
-def main():
-    
-    print("------ USER INFO ------")
-    user = get_user(USER_ID)
-    pretty_print_json(user.json())
-    
-    print("------ LEAGUE INFO ------")
-    league = get_league(LEAGUE_ID)
-    pretty_print_json(league.json())
-    
-
-if __name__ == "__main__":
-    main()
     
     
