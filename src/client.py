@@ -37,3 +37,11 @@ class SleeperClient:
     def get_league(self, league_id=None):
         league_id = league_id or self.league_id
         return self._get(f"league/{league_id}")
+    
+    def get_rosters(self, league_id=None):
+        league_id = league_id or self.league_id
+        return self._get(f"league/{league_id}/rosters")
+    
+    def get_trending_players(self, type="add", lookback_hours=24, limit=25):
+        params = { "type": type, "lookback_hours": lookback_hours, "limit": limit }
+        return self._get("players/nfl/trending/add", params=params)
