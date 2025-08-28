@@ -1,12 +1,14 @@
 
 """ 
 client.py
+A client for interacting with the Sleeper API.
 
+Brendan Dileo, August 2025
 """
 
 import requests
 import json
-from config import BASE_URL, USER_ID, LEAGUE_ID
+from src.config import BASE_URL, USER_ID, LEAGUE_ID
 
 
 class SleeperClient:
@@ -31,3 +33,7 @@ class SleeperClient:
     
     def get_user(self, identifier: str):
         return self._get(f"user/{identifier}")
+    
+    def get_league(self, league_id=None):
+        league_id = league_id or self.league_id
+        return self._get(f"league/{league_id}")
