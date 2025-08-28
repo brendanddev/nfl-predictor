@@ -17,6 +17,7 @@ class SleeperClient:
         self.base_url = base_url
         self.user_id = user_id
         self.league_id = league_id
+        self.players_map = {}
 
     def _get(self, endpoint: str, params=None, headers=None):
         try:
@@ -27,6 +28,17 @@ class SleeperClient:
         except requests.exceptions.RequestException as e:
             print(f"GET request failed: {e}")
             return None
+    
+    def load_players(self, filename="players.json"):
+        try:
+            with open(filename, "r") as file:
+                self.players_map = json.load(file)
+        except FileNotFoundError:
+            print(f"File {filename} not found.")
+            self.players_map = {}
+    
+    def get_player_name(self, player_id):
+        return self.players_map.get(player_id, {}).get("full_name", "Unknown")
         
     def pretty_print(self, data):
         print(json.dumps(data, indent=4))
@@ -44,4 +56,4 @@ class SleeperClient:
     
     def get_trending_players(self, type="add", lookback_hours=24, limit=25):
         params = { "type": type, "lookback_hours": lookback_hours, "limit": limit }
-        return self._get("players/nfl/trending/add", params=params)
+        return self._get(f"players/nfl/trending/{type}", params=params)
