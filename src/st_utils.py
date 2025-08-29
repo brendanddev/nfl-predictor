@@ -9,6 +9,7 @@ Brendan Dileo, August 2025
 
 import streamlit as st
 from src.client import SleeperClient
+from collections import Counter, defaultdict
 
 @st.cache_data(ttl=600)
 def get_user_cached(_client, identifier: str):
@@ -64,11 +65,23 @@ def st_rosters(rosters, client: SleeperClient):
         owner_id = roster["owner_id"]
         owner = client.get_user(owner_id)["display_name"]
         player_ids = roster["players"]
-        players = [client.get_player_name(pid) for pid in player_ids]
         
-        st.write(f"**Roster ID:** {roster['roster_id']} - **Owner:** {owner}")
-        st.write(f"**Players:** {', '.join(players)}\n")
+        grouped = defaultdict(list)
+        for pid in player_ids:
+            player_name = client.get_player_name(pid)
+            player_info = client.get_player(pid)
+            pos = player_info.get("position", "UNK")
+            grouped[pos].append(player_name)
 
+        counts = Counter([client.get_player(pid).get("position", "UNK") for pid in player_ids])
+        total_players = len(player_ids)
+
+        with st.expander(f"Roster {roster['roster_id']} - {owner}"):
+            st.write(f"**Total Players:** {total_players}")
+            st.write("**By Position:** " + ", ".join([f"{pos}: {cnt}" for pos, cnt in counts.items()]))
+
+            for pos, names in grouped.items():
+                st.markdown(f"**{pos}**: {', '.join(names)}")
 
 def st_team_names(rosters, client: SleeperClient):
     if not rosters:
