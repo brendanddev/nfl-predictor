@@ -18,7 +18,7 @@ st.title("Fantasy Football Analyzer Dashboard")
 username = st.text_input("Sleeper Username", value="sleeperuser")
 league_id = st.text_input("League ID", value=client.league_id)
 
-tab1, tab2, tab3, tab4 = st.tabs(["User Info", "League Info", "Rosters", "Trending Players"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["User Info", "League Info", "Rosters", "Trending Players", "Analysis"])
 
 with tab1:
     if username:
@@ -43,3 +43,7 @@ with tab4:
     limit = st.slider("Number of Players", min_value=5, max_value=50, value=10)
     trending_data = stu.get_trending_players_cached(client, type=trend_type, limit=limit)
     stu.st_trending_players(trending_data, client)
+
+with tab5:
+    st.header("Analysis")
+    st.write("Future analysis features will be added here.")
