@@ -18,6 +18,7 @@ class SleeperClient:
         self.user_id = user_id
         self.league_id = league_id
         self.players_map = {}
+        self.load_players("data/players.json")
 
     def _get(self, endpoint: str, params=None, headers=None):
         try:

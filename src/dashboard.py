@@ -31,3 +31,11 @@ with tab2:
         stu.st_league_info(client, league_id)
     else:
         st.info("Enter a League ID in the sidebar to view league info.")
+
+with tab3:
+    stu.st_rosters(client)
+
+with tab4:
+    trend_type = st.selectbox("Trend Type", options=["add", "drop", "claim"])
+    limit = st.slider("Number of Players", min_value=5, max_value=50, value=10)
+    stu.st_trending_players(client, type=trend_type, limit=limit)
