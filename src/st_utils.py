@@ -10,8 +10,11 @@ Brendan Dileo, August 2025
 import streamlit as st
 from src.client import SleeperClient
 
-def st_user_info(client: SleeperClient, identifier: str):
-    user = client.get_user(identifier)
+@st.cache_data(ttl=600)
+def get_user_cached(client: SleeperClient, identifier: str):
+    return client.get_user(identifier)
+
+def st_user_info(user):
     if not user: 
         st.error("User not found")
         return
@@ -23,6 +26,13 @@ def st_user_info(client: SleeperClient, identifier: str):
     st.write(f"**Display Name:** {user['display_name']}")
     st.write(f"**Username:** {user['username']}")
     st.write(f"**User ID:** {user['user_id']}\n")
+
+
+
+
+
+
+
 
 
 def st_league_info(client: SleeperClient, league_id=None):

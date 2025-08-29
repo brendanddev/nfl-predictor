@@ -22,7 +22,8 @@ tab1, tab2, tab3, tab4 = st.tabs(["User Info", "League Info", "Rosters", "Trendi
 
 with tab1:
     if username:
-        stu.st_user_info(client, username)
+        user_data = stu.get_user_cached(client, username)
+        stu.st_user_info(user_data)
     else:
         st.info("Enter a Sleeper username in the sidebar to view user info.")
 
