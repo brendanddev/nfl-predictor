@@ -11,20 +11,20 @@ import streamlit as st
 from src.client import SleeperClient
 
 @st.cache_data(ttl=600)
-def get_user_cached(client: SleeperClient, identifier: str):
-    return client.get_user(identifier)
+def get_user_cached(_client, identifier: str):
+    return _client.get_user(identifier)
 
 @st.cache_data(ttl=600)
-def get_league_cached(client: SleeperClient, league_id=None):
-    return client.get_league(league_id)
+def get_league_cached(_client, league_id=None):
+    return _client.get_league(league_id)
 
 @st.cache_data(ttl=600)
-def get_rosters_cached(client: SleeperClient, league_id=None):
-    return client.get_rosters(league_id)
+def get_rosters_cached(_client, league_id=None):
+    return _client.get_rosters(league_id)
 
 @st.cache_data(ttl=600)
-def get_trending_players_cached(client: SleeperClient, type="add", limit=10):
-    return client.get_trending_players(type=type, limit=limit)
+def get_trending_players_cached(_client, type="add", limit=10):
+    return _client.get_trending_players(type=type, limit=limit)
 
 
 
