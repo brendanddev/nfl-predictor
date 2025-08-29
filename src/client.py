@@ -58,3 +58,13 @@ class SleeperClient:
     def get_trending_players(self, type="add", lookback_hours=24, limit=25):
         params = { "type": type, "lookback_hours": lookback_hours, "limit": limit }
         return self._get(f"players/nfl/trending/{type}", params=params)
+    
+
+    # TODO: Implement these functions
+    
+    # Get best performing players
+    # Get best performing unclaimed players
+    # Get average number of players per position per team
+    # Get best peforming players per position
+    # Get best performing teams
+    
