@@ -10,6 +10,7 @@ Brendan Dileo, August 2025
 
 import streamlit as st
 from client import SleeperClient
+import st_utils as stu
 
 client = SleeperClient()
 
@@ -22,23 +23,7 @@ league_id = st.sidebar.text_input("League ID", value=client.league_id)
 
 # Fetch user info
 if st.sidebar.button("Get User Info"):
-    user = client.get_user(username)
-    if user:
-        avatar = user["avatar"]
-        display_name = user["display_name"]
-        username = user["username"]
-        user_id = user["user_id"]
-        
-        st.subheader("User Info")
-        
-        if avatar:
-            st.image(f"https://sleepercdn.com/avatars/{avatar}", width=100)
-
-        st.write(f"**Display Name:** {display_name}")
-        st.write(f"**Username:** {username}")
-        st.write(f"**User ID:** {user_id}")
-    else:
-        st.error("Failed to fetch user info")
+    stu.st_user_info(client, username)
 
 # Fetch league info
 if st.sidebar.button("Get League Info"):
