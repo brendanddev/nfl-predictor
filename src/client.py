@@ -82,25 +82,10 @@ class SleeperClient:
                 })
         return stats
     
-    
     def get_trending_players(self, type="add", lookback_hours=24, limit=25):
         params = { "type": type, "lookback_hours": lookback_hours, "limit": limit }
         return self._get(f"players/nfl/trending/{type}", params=params)
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     # TODO: Implement these functions
