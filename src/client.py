@@ -19,6 +19,7 @@ class SleeperClient:
         self.league_id = league_id
         self.players_map = {}
         self.load_players("data/players.json")
+        self.cache = {}
 
     def _get(self, endpoint: str, params=None, headers=None):
         try:
@@ -29,6 +30,17 @@ class SleeperClient:
         except requests.exceptions.RequestException as e:
             print(f"GET request failed: {e}")
             return None
+    
+    def _get_cached(self, endpoint: str, params=None):
+        key = f"{endpoint}-{params}"
+        if key in self.cache:
+            return self.cache[key]
+        
+        result = self._get(endpoint, params=params)
+        if result is not None:
+            self.cache[key] = result
+        return result
+
     
     def load_players(self, filename="players.json"):
         try:
@@ -48,19 +60,19 @@ class SleeperClient:
         print(json.dumps(data, indent=4))
     
     def get_user(self, identifier: str):
-        return self._get(f"user/{identifier}")
+        return self._get_cached(f"user/{identifier}")
     
     def get_league(self, league_id=None):
         league_id = league_id or self.league_id
-        return self._get(f"league/{league_id}")
+        return self._get_cached(f"league/{league_id}")
     
     def get_rosters(self, league_id=None):
         league_id = league_id or self.league_id
-        return self._get(f"league/{league_id}/rosters")
+        return self._get_cached(f"league/{league_id}/rosters")
     
     def get_weekly_matchups(self, league_id=None, week=None):
         league_id = league_id or self.league_id
-        return self._get(f"league/{league_id}/matchups/{week}")
+        return self._get_cached(f"league/{league_id}/matchups/{week}")
     
     def get_player_stats_for_week(self, week=None, league_id=None):
         matchups = self.get_weekly_matchups(league_id=league_id, week=week)
@@ -84,7 +96,7 @@ class SleeperClient:
     
     def get_trending_players(self, type="add", lookback_hours=24, limit=25):
         params = { "type": type, "lookback_hours": lookback_hours, "limit": limit }
-        return self._get(f"players/nfl/trending/{type}", params=params)
+        return self._get_cached(f"players/nfl/trending/{type}", params=params)
     
 
 
