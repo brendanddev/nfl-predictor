@@ -6,6 +6,7 @@ A client for interacting with the Sleeper API.
 Brendan Dileo, August 2025
 """
 
+import time
 import requests
 import json
 from src.config import BASE_URL, USER_ID, LEAGUE_ID
@@ -20,6 +21,7 @@ class SleeperClient:
         self.players_map = {}
         self.load_players("data/players.json")
         self.cache = {}
+        self.default_ttl = 600
 
     def _get(self, endpoint: str, params=None, headers=None):
         try:
@@ -31,16 +33,21 @@ class SleeperClient:
             print(f"GET request failed: {e}")
             return None
     
-    def _get_cached(self, endpoint: str, params=None):
-        key = f"{endpoint}-{params}"
-        if key in self.cache:
-            return self.cache[key]
+    def _get_cached(self, endpoint: str, params=None, ttl=None):
+        ttl = ttl or self.default_ttl
+        key = f"{endpoint}-{json.dumps(params, sort_keys=True)}"
+        cached = self.cache.get(key)
+        
+        if cached:
+            result, timestamp = cached
+            if time.time() - timestamp < ttl:
+                return result
         
         result = self._get(endpoint, params=params)
         if result is not None:
-            self.cache[key] = result
+            self.cache[key] = (result, time.time())
         return result
-
+    
     
     def load_players(self, filename="players.json"):
         try:
