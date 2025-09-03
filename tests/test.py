@@ -15,3 +15,6 @@ client.load_players("data/players.json")
 player = client.get_player("1234")
 print(player["full_name"], player["position"], player["team"])
 
+
+projections = client.get_projections(season=2025, week=1)
+print(projections[:10])
