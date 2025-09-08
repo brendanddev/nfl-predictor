@@ -11,6 +11,7 @@ from src.client import SleeperClient
 client = SleeperClient()
 client.load_players("data/players.json")
 
-# Fetch and print user info
-player = client.get_player("1234")
-print(player["full_name"], player["position"], player["team"])
+
+avg_comp = client.get_average_roster_composition()
+for position, avg in avg_comp.items():
+    print(f"{position}: {avg:.2f}")

@@ -7,6 +7,7 @@ Brendan Dileo, August 2025
 """
 
 import time
+from typing import Counter
 import requests
 import json
 from src.config import BASE_URL, USER_ID, LEAGUE_ID
@@ -150,10 +151,32 @@ class SleeperClient:
         
         top_performers = sorted(weekly_stats, key=lambda x: x["points"], reverse=True)
         return top_performers[:limit]
-
-
-
-
+    
+    def get_average_roster_composition(self, league_id=None):
+        league_id = league_id or self.league_id
+        rosters = self.get_rosters(league_id=league_id)
+        if not rosters:
+            return {}
+        
+        total_counts = Counter()
+        num_teams = len(rosters)
+        pos_counts = Counter()
+        
+        for roster in rosters:
+            player_ids = roster.get("players", [])
+            
+            for pid in player_ids:
+                player = self.get_player(pid)
+                pos = player.get("position", "UNK")
+                pos_counts[pos] += 1
+            
+            total_counts.update(pos_counts)
+            
+        avg_composition = {
+            pos: total / num_teams
+            for pos, total in total_counts.items()
+        }
+        return avg_composition
 
 
 
@@ -170,6 +193,4 @@ class SleeperClient:
     
     
     # TODO: Implement these functions
-    
     # Get best performing unclaimed players
-    # Get average number of players per position per team
