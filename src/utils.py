@@ -61,3 +61,15 @@ def print_trending_players(client: SleeperClient, type="add", limit=10):
     for player in trending:
         name = client.get_player_name(player["player_id"])
         print(f"{name} - Count: {player['count']}")
+
+def print_top_performers(client: SleeperClient, week=1, limit=10):
+    top_performers = client.get_top_performers(week=week, limit=limit)
+    print(f"\n=== Top Performers Week {week} ===")
+    for performer in top_performers:
+        print(f"{performer['full_name']} ({performer['position']}, {performer['team']}): {performer['points']} pts")
+
+def print_top_performing_teams(client: SleeperClient, week=1, limit=10):
+    top_teams = client.get_top_performing_teams(week=week, limit=limit)
+    print(f"\n=== Best Performing Teams Week {week} ===")
+    for team in top_teams:
+        print(f"{team['owner_name']}: {team['points']} pts")

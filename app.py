@@ -7,7 +7,7 @@ Brendan Dileo, August 2025
 """
 
 from src.client import SleeperClient
-from src.utils import print_rosters, print_team_names, print_league_info, print_user_info, print_trending_players
+from src.utils import print_rosters, print_team_names, print_league_info, print_user_info, print_trending_players, print_top_performers, print_top_performing_teams
 
 client = SleeperClient()
 client.load_players("data/players.json")
@@ -17,16 +17,5 @@ client.load_players("data/players.json")
 # print_rosters(client)
 # print_team_names(client)
 # print_trending_players(client, type="add", limit=10)
-
-
-# top_peformers = client.get_top_performers(week=1, limit=10)
-# print("Top Performers")
-# for performer in top_peformers:
-#     print(f"{performer['full_name']} ({performer['position']}, {performer['team']}): {performer['points']} points")
-
-week = 1
-best_teams = client.get_top_performing_teams(week=week, limit=10)
-
-print(f"\n=== Best Performing Teams Week {week} ===")
-for t in best_teams:
-    print(f"{t['owner_name']}: {t['points']} pts")
+print_top_performers(client, week=1, limit=10)
+print_top_performing_teams(client, week=1, limit=10)
