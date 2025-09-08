@@ -23,10 +23,3 @@ client.load_players("data/players.json")
 # print("Top Performers")
 # for performer in top_peformers:
 #     print(f"{performer['full_name']} ({performer['position']}, {performer['team']}): {performer['points']} points")
-
-week = 1
-top_unclaimed = client.get_top_unclaimed_performers(week=week, limit=10)
-
-print(f"\n=== Top Unclaimed Players Week {week} ===")
-for p in top_unclaimed:
-    print(f"{p['full_name']} ({p['position']}, {p['team']}): {p['points']} pts")
