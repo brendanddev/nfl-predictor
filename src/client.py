@@ -112,23 +112,29 @@ class SleeperClient:
         top_performers = sorted(weekly_stats, key=lambda x: x["points"], reverse=True)
         return top_performers[:limit]
     
+    
+        
+        
     def get_top_unclaimed_performers(self, week=None, limit=10, league_id=None):
-        week = week or 1
         league_id = league_id or self.league_id
-        
-        rosters = self.get_rosters(league_id=league_id)
-        claimed_player_ids = set()
-        for roster in rosters or []:
-            for pid in roster.get("players", []):
-                claimed_player_ids.add(pid)
-        
+
+        league_players = self._get_cached(f"leagues/{league_id}/players") or {}
+        unclaimed_players = [pid for pid, p in league_players.items() if p.get("roster") is None]
         weekly_stats = self.get_player_stats_for_week(week=week, league_id=league_id)
-        if not weekly_stats:
-            return []
-        
-        unclaimed_stats = [p for p in weekly_stats if p["player_id"] not in claimed_player_ids]
-        top_unclaimed = sorted(unclaimed_stats, key=lambda x: x["points"], reverse=True)
-        return top_unclaimed[:limit]
+        weekly_stats_map = {p["player_id"]: p for p in weekly_stats}
+
+        unclaimed_stats = []
+        for pid in unclaimed_players:
+            data = weekly_stats_map.get(pid, {})
+            unclaimed_stats.append({
+                "player_id": pid,
+                "full_name": self.get_player_name(pid),
+                "position": self.players_map.get(pid, {}).get("position", "Unknown"),
+                "team": self.players_map.get(pid, {}).get("team", "Unknown"),
+                "points": data.get("points", 0)
+            })
+
+        return sorted(unclaimed_stats, key=lambda x: x["points"], reverse=True)[:limit]
 
 
 
