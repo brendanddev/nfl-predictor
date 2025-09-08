@@ -69,4 +69,15 @@ print_user_info(client, "1234567890")
 
 ## Usage with Streamlit
 
+Run the interactive dashboard:
+```bash
+streamlit run src/dashboard.py
+```
+
+Explore tabs for: 
+- Top Performers
+- Trending Players
+- Team Performance
+- League Overview
+
 ---
