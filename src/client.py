@@ -104,26 +104,29 @@ class SleeperClient:
     def get_trending_players(self, type="add", lookback_hours=24, limit=25):
         params = { "type": type, "lookback_hours": lookback_hours, "limit": limit }
         return self._get_cached(f"players/nfl/trending/{type}", params=params)
+    
+    def get_top_performers(self, week=None, limit=10, league_id=None):
+        weekly_stats = self.get_player_stats_for_week(week=week, league_id=league_id)
+        if not weekly_stats:
+            return []
+        top_performers = sorted(weekly_stats, key=lambda x: x["points"], reverse=True)
+        return top_performers[:limit]
 
-    # https://api.sleeper.com/projections/nfl/2025/1?season_type=regular&position[]=DEF&position[]=FLEX&position[]=K&position[]=QB&position[]=RB&position[]=TE&position[]=WR&order_by=ppr
-    def get_projections(self, season=2025, week=1, season_type="regular", positions=None, order_by="ppr"):
-        positions = positions or ["QB", "RB", "WR", "TE", "FLEX", "K", "DEF"]
-        params = {
-            "season_type": season_type,
-            "position[]": positions,
-            "order_by": order_by
-        }
-        return self._get_cached(f"projections/nfl/{season}/{week}", params=params)
-    
-    
+
+
+
+
+
+
+    # https://api.sleeper.com/stats/nfl/player/6794?season_type=regular&season=2021&grouping=week
+    def get_player_projections(self, player_id, season=2025):
+        params = { "season_type": "regular", "season": season, "grouping": "week" }
+        return self._get_cached(f"stats/nfl/player/{player_id}", params=params)
     
     
     # TODO: Implement these functions
     
-    # Get best performing players
     # Get best performing unclaimed players
     # Get average number of players per position per team
     # Get best peforming players per position
     # Get best performing teams
-    
-    
