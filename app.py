@@ -19,3 +19,8 @@ client.load_players("data/players.json")
 # print_trending_players(client, type="add", limit=10)
 print_top_performers(client, week=1, limit=10)
 print_top_performing_teams(client, week=1, limit=10)
+
+top_performing_rb = client.get_top_performers_by_position(week=1, position="RB", limit=5)
+print("\nTop Performing RBs:")
+for player in top_performing_rb:
+    print(f"{player['full_name']} - {player['points']} points")
