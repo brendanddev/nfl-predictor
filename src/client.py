@@ -111,6 +111,48 @@ class SleeperClient:
             return []
         top_performers = sorted(weekly_stats, key=lambda x: x["points"], reverse=True)
         return top_performers[:limit]
+    
+    def get_top_performing_teams(self, week=None, limit=10, league_id=None):
+        week = week or 1
+        league_id = league_id or self.league_id
+        
+        matchups = self.get_weekly_matchups(league_id=league_id, week=week)
+        if not matchups:
+            return []
+        
+        rosters = self.get_rosters(league_id=league_id)
+        roster_map = {roster["roster_id"]: roster for roster in rosters}
+        
+        team_scores = []
+        for matchup in matchups:
+            roster_id = matchup["roster_id"]
+            points = matchup["points"]
+            
+            roster_info = roster_map.get(roster_id, {})
+            owner_id = roster_info.get("owner_id", "Unknown")
+            owner_name = self.get_user(owner_id).get("display_name", "Unknown")
+            
+            team_scores.append({
+                "roster_id": roster_id,
+                "owner_name": owner_name,
+                "points": points
+            })
+        
+        return sorted(team_scores, key=lambda x: x["points"], reverse=True)[:limit]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -127,4 +169,3 @@ class SleeperClient:
     # Get best performing unclaimed players
     # Get average number of players per position per team
     # Get best peforming players per position
-    # Get best performing teams

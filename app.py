@@ -23,3 +23,10 @@ client.load_players("data/players.json")
 # print("Top Performers")
 # for performer in top_peformers:
 #     print(f"{performer['full_name']} ({performer['position']}, {performer['team']}): {performer['points']} points")
+
+week = 1
+best_teams = client.get_top_performing_teams(week=week, limit=10)
+
+print(f"\n=== Best Performing Teams Week {week} ===")
+for t in best_teams:
+    print(f"{t['owner_name']}: {t['points']} pts")
