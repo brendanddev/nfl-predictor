@@ -79,3 +79,9 @@ def print_top_performers_by_position(client: SleeperClient, week=1, position="WR
     print(f"\n=== Top {position} Performers Week {week} ===")
     for performer in top_performers:
         print(f"{performer['full_name']} ({performer['team']}): {performer['points']} pts")
+    
+def print_average_roster_composition(client: SleeperClient):
+    avg_comp = client.get_average_roster_composition()
+    print("\n=== Average Roster Composition ===")
+    for position, avg in avg_comp.items():
+        print(f"{position}: {avg:.2f}")
