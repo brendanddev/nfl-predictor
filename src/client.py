@@ -173,4 +173,3 @@ class SleeperClient:
     
     # Get best performing unclaimed players
     # Get average number of players per position per team
-    # Get best peforming players per position

@@ -103,3 +103,23 @@ def st_trending_players(trending, client: SleeperClient):
     for player in trending:
         name = client.get_player_name(player["player_id"])
         st.write(f"**{name}** - Count: {player['count']}")
+
+def st_top_performers(top_performers, week):
+    if not top_performers:
+        st.error("No top performers found")
+        return
+    
+    st.subheader(f"Top Performers - Week {week}")
+    for performer in top_performers:
+        st.write(f"**{performer['full_name']}** ({performer['position']}, {performer['team']}): {performer['points']} pts")
+
+def st_top_performing_teams(top_teams, week):
+    if not top_teams:
+        st.error("No top performing teams found")
+        return
+    st.subheader(f"Best Performing Teams - Week {week}")
+    for team in top_teams:
+        st.write(f"**{team['owner_name']}**: {team['points']} pts")
+
+
+

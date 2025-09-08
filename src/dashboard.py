@@ -56,4 +56,16 @@ with tab4:
 
 with tab5:
     st.header("Analysis")
-    st.write("Future analysis features will be added here.")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        with st.spinner("Loading top performers..."):
+            top_performers = client.get_top_performers(week=1, limit=10, league_id=league_id)
+            time.sleep(1)
+        stu.st_top_performers(top_performers, week=1)
+    
+    with col2:
+        with st.spinner("Loading top performing teams..."):
+            top_teams = client.get_top_performing_teams(week=1, limit=10, league_id=league_id)
+            time.sleep(1)
+        stu.st_top_performing_teams(top_teams, week=1)
