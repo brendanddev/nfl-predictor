@@ -141,7 +141,7 @@ class SleeperClient:
         return sorted(team_scores, key=lambda x: x["points"], reverse=True)[:limit]
 
     def get_top_performers_by_position(self, week=None, position=None, limit=10, league_id=None):
-        weekly_stats = self.get_player_stats_for_week(week=week, limit=100, league_id=league_id)
+        weekly_stats = self.get_player_stats_for_week(week=week, league_id=league_id)
         if not weekly_stats:
             return []
         
