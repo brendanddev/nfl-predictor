@@ -29,5 +29,44 @@ The library is split into:
 
 ## Features
 
+- **User & League Data**
+  - Fetch user profiles and league details.
+- **Roster & Player Analysis**
+  - View rosters, player names, positions, and NFL teams.
+  - Track top performers per week and by position.
+  - View trending players (adds, drops, trades) over custom timeframes.
+- **Team Performance**
+  - Identify best-performing fantasy teams by weekly points.
+- **Roster Composition Insights**
+  - Calculate the average number of players per position across all teams.
+- **Interactive Dashboard**
+  - Streamlit-based with multiple tabs for top performers, trending players, team performance, and league overview.
+
+---
+
+## Installation
+```bash
+git clone https://github.com/brendanddev/fantasy-analyzer
+cd fantasy-analyzer
+pip install -r requirements.txt
+```
+
+---
+
+## Quick Start
+```python
+from src.client import SleeperClient
+from src.utils import print_user_info
+
+client = SleeperClient()
+# Optionally load local players JSON
+# client.load_players("data/players.json")
+
+print_user_info(client, "1234567890")
+```
+
+---
+
+## Usage with Streamlit
 
 ---
