@@ -20,6 +20,4 @@ client.load_players("data/players.json")
 # print_top_performers(client, week=1, limit=10)
 # print_top_performing_teams(client, week=1, limit=10)
 # print_top_performers_by_position(client, week=1, position="RB", limit=10)
-
-
 print_average_roster_composition(client)

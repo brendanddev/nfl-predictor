@@ -78,3 +78,9 @@ with tab5:
             top_position_performers = client.get_top_performers_by_position(week=1, position=position, limit=10, league_id=league_id)
             time.sleep(1)
         stu.st_top_performers(top_position_performers, week=1)
+    
+    with col4:
+        with st.spinner("Calculating average roster composition..."):
+            avg_composition = client.get_average_roster_composition(league_id=league_id)
+            time.sleep(1)
+        stu.st_average_roster_composition(avg_composition)

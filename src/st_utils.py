@@ -129,3 +129,12 @@ def st_top_performers_by_position(top_performers, week, position):
     st.subheader(f"Top {position} Performers - Week {week}")
     for performer in top_performers:
         st.write(f"**{performer['full_name']}** ({performer['team']}): {performer['points']} pts")
+
+def st_average_roster_composition(avg_comp):
+    if not avg_comp:
+        st.error("No roster composition data found")
+        return
+    
+    st.subheader("Average Roster Composition")
+    for position, avg in avg_comp.items():
+        st.write(f"**{position}**: {avg:.2f}")
