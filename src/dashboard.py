@@ -56,26 +56,25 @@ with tab4:
 
 with tab5:
     st.header("Analysis")
-    row1, row2 = st.rows(2)
     col1, col2 = st.columns(2)
     
-    with row1:
-        with col1:
-            with st.spinner("Loading top performers..."):
-                top_performers = client.get_top_performers(week=1, limit=10, league_id=league_id)
-                time.sleep(1)
-            stu.st_top_performers(top_performers, week=1)
-        
-        with col2:
-            with st.spinner("Loading top performing teams..."):
-                top_teams = client.get_top_performing_teams(week=1, limit=10, league_id=league_id)
-                time.sleep(1)
-            stu.st_top_performing_teams(top_teams, week=1)
-    
-    with row2:
-        position = st.selectbox("Position", options=["QB", "RB", "WR", "TE", "K", "DEF"])
-        
-        with st.spinner("Loading top performers by position..."):
-            top_by_position = client.get_top_performers_by_position(week=1, position=position, limit=5, league_id=league_id)
+    with col1:
+        with st.spinner("Loading top performers..."):
+            top_performers = client.get_top_performers(week=1, limit=10, league_id=league_id)
             time.sleep(1)
-        stu.st_top_performers(top_by_position, week=1)
+        stu.st_top_performers(top_performers, week=1)
+    
+    with col2:
+        with st.spinner("Loading top performing teams..."):
+            top_teams = client.get_top_performing_teams(week=1, limit=10, league_id=league_id)
+            time.sleep(1)
+        stu.st_top_performing_teams(top_teams, week=1)
+    
+    col3, col4 = st.columns(2)
+    
+    with col3:
+        position = st.selectbox("Position", options=["QB", "RB", "WR", "TE", "K", "DEF"])
+        with st.spinner(f"Loading top {position} performers..."):
+            top_position_performers = client.get_top_performers_by_position(week=1, position=position, limit=10, league_id=league_id)
+            time.sleep(1)
+        stu.st_top_performers(top_position_performers, week=1)
