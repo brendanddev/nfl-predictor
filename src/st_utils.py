@@ -121,5 +121,11 @@ def st_top_performing_teams(top_teams, week):
     for team in top_teams:
         st.write(f"**{team['owner_name']}**: {team['points']} pts")
 
-
-
+def st_top_performers_by_position(top_performers, week, position):
+    if not top_performers:
+        st.error(f"No top performers found for position {position}")
+        return
+    
+    st.subheader(f"Top {position} Performers - Week {week}")
+    for performer in top_performers:
+        st.write(f"**{performer['full_name']}** ({performer['team']}): {performer['points']} pts")
