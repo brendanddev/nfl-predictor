@@ -160,9 +160,9 @@ class SleeperClient:
         
         total_counts = Counter()
         num_teams = len(rosters)
-        pos_counts = Counter()
         
         for roster in rosters:
+            pos_counts = Counter()
             player_ids = roster.get("players", [])
             
             for pid in player_ids:
