@@ -73,3 +73,9 @@ def print_top_performing_teams(client: SleeperClient, week=1, limit=10):
     print(f"\n=== Best Performing Teams Week {week} ===")
     for team in top_teams:
         print(f"{team['owner_name']}: {team['points']} pts")
+
+def print_top_performers_by_position(client: SleeperClient, week=1, position="WR", limit=10):
+    top_performers = client.get_top_performers_by_position(week=week, position=position, limit=limit)
+    print(f"\n=== Top {position} Performers Week {week} ===")
+    for performer in top_performers:
+        print(f"{performer['full_name']} ({performer['team']}): {performer['points']} pts")
