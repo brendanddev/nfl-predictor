@@ -35,7 +35,7 @@ class SleeperClient:
             print(f"GET request failed: {e}")
             return None
     
-    def _get_cached(self, endpoint: str, params=None, ttl=None):
+    def _get_cached(self, endpoint: str, params=None, ttl=None, base_url=None):
         ttl = ttl or self.default_ttl
         key = f"{endpoint}-{json.dumps(params, sort_keys=True)}"
         cached = self.cache.get(key)
@@ -45,7 +45,7 @@ class SleeperClient:
             if time.time() - timestamp < ttl:
                 return result
         
-        result = self._get(endpoint, params=params)
+        result = self._get(endpoint, params=params, base_url=base_url)
         if result is not None:
             self.cache[key] = (result, time.time())
         return result
@@ -90,7 +90,7 @@ class SleeperClient:
             "grouping": "week"
         }
 
-        data = self._get(
+        data = self._get_cached(
             f"stats/nfl/player/{player_id}",
             params=params,
             base_url=self.alt_url
