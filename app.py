@@ -24,6 +24,9 @@ client.load_players("data/players.json")
 # print_average_roster_composition(client)
 print_average_points_by_position(client)
 
+
+
+
 import requests
 
 player_id = "6794"

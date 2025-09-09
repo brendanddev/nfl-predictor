@@ -86,18 +86,21 @@ class SleeperClient:
 
     def get_player_stats(self, player_id, week=None, season=2025):
         params = {"season_type": "regular", "season": season, "grouping": "week"}
-        raw_stats = self._get_cached(f"stats/nfl/player/{player_id}", params=params)
-
+        raw_stats = self._get(f"stats/nfl/player/{player_id}", params=params)
+        
         if not raw_stats:
             return {}
 
         if week:
-            week_data = raw_stats.get(str(week))
-            if week_data is not None and "stats" in week_data:
+            week_str = str(week)
+            week_data = raw_stats.get(week_str)
+            if week_data and "stats" in week_data:
                 return week_data["stats"]
             return {}
+        
+        return {w: data["stats"] for w, data in raw_stats.items() if data and "stats" in data}
+            
 
-        return {w: data["stats"] for w, data in raw_stats.items() if data is not None and "stats" in data}
     
     def get_player_stats_for_week(self, week=None, league_id=None):
         matchups = self.get_weekly_matchups(league_id=league_id, week=week)
