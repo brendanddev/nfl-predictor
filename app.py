@@ -20,4 +20,11 @@ client.load_players("data/players.json")
 # print_top_performers(client, week=1, limit=10)
 # print_top_performing_teams(client, week=1, limit=10)
 # print_top_performers_by_position(client, week=1, position="RB", limit=10)
-print_average_roster_composition(client)
+# print_average_roster_composition(client)
+
+week = 1
+top_unclaimed = client.get_top_unclaimed_players(week=week, limit=10)
+
+print(f"\n=== Top Unclaimed Players Week {week} ===")
+for p in top_unclaimed:
+    print(f"{p['full_name']} ({p['position']}, {p['team']}): {p['points']} pts")
