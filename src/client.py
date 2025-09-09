@@ -178,21 +178,30 @@ class SleeperClient:
         }
         return avg_composition
 
-    def get_top_unclaimed_players(self, week=None, limit=10, league_id=None):
-        league = league_id or self.league_id
+    def get_average_points_by_position(self, week=None, league_id=None):
+        league_id = league_id or self.league_id
         week = week or 1
         
-        rosters = self.get_rosters(league_id=league)
-        claimed_players = set()
-        for roster in rosters:
-            claimed_players.update(roster.get("players", []))
+        matchups = self.get_weekly_matchups(league_id=league_id, week=week)
+        if not matchups:
+            return {}
+
+        total_points = Counter()
+        position_counts = Counter()
         
-        weekly_stats = self.get_player_stats_for_week(week=week, league_id=league)
-        if not weekly_stats:
-            return []
-        unclaimed_stats = [stat for stat in weekly_stats if stat["player_id"] not in claimed_players]
-        top_unclaimed = sorted(unclaimed_stats, key=lambda x: x["points"], reverse=True)
-        return top_unclaimed[:limit]
+        for matchup in matchups:
+            player_points = matchup.get("players_points", {})
+            for pid, points in player_points.items():
+                player = self.get_player(pid)
+                pos = player.get("position", "UNK")
+                total_points[pos] += points
+                position_counts[pos] += 1
+        
+        avg_points = {
+            pos: total_points[pos] / position_counts[pos]
+            for pos in total_points
+        }
+        return avg_points
 
 
 
