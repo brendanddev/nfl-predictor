@@ -94,9 +94,9 @@ class SleeperClient:
         clean_stats = {w: data for w, data in raw_stats.items() if data}
 
         if week:
-            return clean_stats.get(str(week), {}).get("stats", {})
+            return clean_stats.get(str(week), {})
         else:
-            return {w: data.get("stats", {}) for w, data in clean_stats.items()}
+            return clean_stats
         
     
     def get_player_stats_for_week(self, week=None, league_id=None):

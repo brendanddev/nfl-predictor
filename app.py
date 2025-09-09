@@ -25,5 +25,5 @@ client.load_players("data/players.json")
 print_average_points_by_position(client)
 
 player_id = "6794"
-raw_stats = client._get_cached(f"stats/nfl/player/{player_id}", params={"season_type":"regular","season":2025,"grouping":"week"})
-print(json.dumps(raw_stats, indent=4))
+stats_all = client.get_player_stats(player_id)  # no week filter
+print(stats_all)
