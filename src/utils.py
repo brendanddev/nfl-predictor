@@ -85,3 +85,9 @@ def print_average_roster_composition(client: SleeperClient):
     print("\n=== Average Roster Composition ===")
     for position, avg in avg_comp.items():
         print(f"{position}: {avg:.2f}")
+        
+def print_average_points_by_position(client: SleeperClient): 
+    avg_points = client.get_average_points_by_position()
+    print("\n=== Average Points by Position ===")
+    for position, avg in avg_points.items():
+        print(f"{position}: {avg:.2f}")

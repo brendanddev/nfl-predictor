@@ -82,6 +82,23 @@ class SleeperClient:
         league_id = league_id or self.league_id
         return self._get_cached(f"league/{league_id}/matchups/{week}")
     
+    # https://api.sleeper.com/stats/nfl/player/6794?season_type=regular&season=2021&grouping=week
+
+    def get_player_stats(self, player_id, week=None, season=2025):
+        params = {"season_type": "regular", "season": season, "grouping": "week"}
+        raw_stats = self._get_cached(f"stats/nfl/player/{player_id}", params=params)
+
+        if not raw_stats:
+            return {}
+
+        clean_stats = {w: data for w, data in raw_stats.items() if data}
+
+        if week:
+            return clean_stats.get(str(week), {}).get("stats", {})
+        else:
+            return {w: data.get("stats", {}) for w, data in clean_stats.items()}
+        
+    
     def get_player_stats_for_week(self, week=None, league_id=None):
         matchups = self.get_weekly_matchups(league_id=league_id, week=week)
         stats = []
@@ -201,20 +218,7 @@ class SleeperClient:
             pos: total_points[pos] / position_counts[pos]
             for pos in total_points
         }
-        return avg_points
-
-
-
-
-
-
-
-    # TODO: Not working correctly - Returns dict of player ids
-    # https://api.sleeper.com/stats/nfl/player/6794?season_type=regular&season=2021&grouping=week
-    def get_player_projections(self, player_id, season=2025):
-        params = { "season_type": "regular", "season": season, "grouping": "week" }
-        return self._get_cached(f"stats/nfl/player/{player_id}", params=params)
-    
+        return avg_points    
     
     # TODO: Implement these functions
     # Get best performing unclaimed players

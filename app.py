@@ -7,7 +7,8 @@ Brendan Dileo, August 2025
 """
 
 from src.client import SleeperClient
-from src.utils import print_average_roster_composition, print_rosters, print_team_names, print_league_info, print_user_info, print_trending_players, print_top_performers_by_position, print_top_performers, print_top_performing_teams
+from src.utils import print_average_points_by_position, print_average_roster_composition, print_rosters, print_team_names, print_league_info, print_user_info, print_trending_players, print_top_performers_by_position, print_top_performers, print_top_performing_teams
+import json
 
 client = SleeperClient()
 client.load_players("data/players.json")
@@ -21,8 +22,8 @@ client.load_players("data/players.json")
 # print_top_performing_teams(client, week=1, limit=10)
 # print_top_performers_by_position(client, week=1, position="RB", limit=10)
 # print_average_roster_composition(client)
+print_average_points_by_position(client)
 
-avg_points = client.get_average_points_by_position(week=1)
-print("=== Average Points by Position (Week 1) ===")
-for pos, avg in avg_points.items():
-    print(f"{pos}: {avg:.2f}")
+player_id = "6794"
+raw_stats = client._get_cached(f"stats/nfl/player/{player_id}", params={"season_type":"regular","season":2025,"grouping":"week"})
+print(json.dumps(raw_stats, indent=4))
