@@ -82,45 +82,37 @@ class SleeperClient:
         league_id = league_id or self.league_id
         return self._get_cached(f"league/{league_id}/matchups/{week}")
     
-    # https://api.sleeper.com/stats/nfl/player/6794?season_type=regular&season=2021&grouping=week
-
     def get_player_stats(self, player_id, week=None, season=2025):
-        params = {"season_type": "regular", "season": season, "grouping": "week"}
-        raw_stats = self._get(f"stats/nfl/player/{player_id}", params=params)
-        
-        if not raw_stats:
-            return {}
-
-        if week:
-            week_str = str(week)
-            week_data = raw_stats.get(week_str)
-            if week_data and "stats" in week_data:
-                return week_data["stats"]
-            return {}
-        
-        return {w: data["stats"] for w, data in raw_stats.items() if data and "stats" in data}
-            
-
+        import requests
     
-    def get_player_stats_for_week(self, week=None, league_id=None):
-        matchups = self.get_weekly_matchups(league_id=league_id, week=week)
-        stats = []
+        url = f"https://api.sleeper.com/stats/nfl/player/{player_id}"
+        params = {
+            "season_type": "regular",
+            "season": season,
+            "grouping": "week"
+        }
         
-        if not matchups:
-            return stats
-        
-        for matchup in matchups:
-            player_points = matchup.get("players_points", {})
-            for pid, points in player_points.items():
-                player = self.get_player(pid)
-                stats.append({
-                    "player_id": pid,
-                    "full_name": player.get("full_name", "Unknown"),
-                    "position": player.get("position", "Unknown"),
-                    "team": player.get("team", "Unknown"),
-                    "points": points
-                })
-        return stats
+        try:
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
+            
+            if week:
+                week_str = str(week)
+                week_data = data.get(week_str)
+                if week_data and isinstance(week_data, dict) and "stats" in week_data:
+                    return week_data["stats"]
+                return {}
+            else:
+                result = {}
+                for w, week_data in data.items():
+                    if week_data and isinstance(week_data, dict) and "stats" in week_data:
+                        result[w] = week_data["stats"]
+                return result
+                
+        except requests.exceptions.RequestException as e:
+            print(f"Request failed: {e}")
+            return {}
     
     def get_trending_players(self, type="add", lookback_hours=24, limit=25):
         params = { "type": type, "lookback_hours": lookback_hours, "limit": limit }
