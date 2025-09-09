@@ -91,13 +91,13 @@ class SleeperClient:
         if not raw_stats:
             return {}
 
-        clean_stats = {w: data for w, data in raw_stats.items() if data}
-
         if week:
-            return clean_stats.get(str(week), {})
-        else:
-            return clean_stats
-        
+            week_data = raw_stats.get(str(week))
+            if week_data is not None and "stats" in week_data:
+                return week_data["stats"]
+            return {}
+
+        return {w: data["stats"] for w, data in raw_stats.items() if data is not None and "stats" in data}
     
     def get_player_stats_for_week(self, week=None, league_id=None):
         matchups = self.get_weekly_matchups(league_id=league_id, week=week)

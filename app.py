@@ -24,6 +24,18 @@ client.load_players("data/players.json")
 # print_average_roster_composition(client)
 print_average_points_by_position(client)
 
+import requests
+
 player_id = "6794"
-stats_all = client.get_player_stats(player_id)  # no week filter
-print(stats_all)
+url = f"https://api.sleeper.com/stats/nfl/player/{player_id}"
+params = {
+    "season_type": "regular",
+    "season": 2025,
+    "grouping": "week"
+}
+
+response = requests.get(url, params=params)
+data = response.json()
+
+# Print week 1 stats
+print(data.get("1"))
