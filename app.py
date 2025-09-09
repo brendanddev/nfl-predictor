@@ -7,8 +7,7 @@ Brendan Dileo, August 2025
 """
 
 from src.client import SleeperClient
-from src.utils import print_average_points_by_position, print_average_roster_composition, print_rosters, print_team_names, print_league_info, print_user_info, print_trending_players, print_top_performers_by_position, print_top_performers, print_top_performing_teams
-import json
+from src.utils import print_player_stats, print_average_points_by_position, print_average_roster_composition, print_rosters, print_team_names, print_league_info, print_user_info, print_trending_players, print_top_performers_by_position, print_top_performers, print_top_performing_teams
 
 client = SleeperClient()
 client.load_players("data/players.json")
@@ -24,5 +23,4 @@ client.load_players("data/players.json")
 # print_average_roster_composition(client)
 # print_average_points_by_position(client)
 
-stats = client.get_player_stats("6794", week=1)
-print(stats)
+print_player_stats(client, "6794", week=1)

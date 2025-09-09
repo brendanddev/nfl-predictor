@@ -91,3 +91,28 @@ def print_average_points_by_position(client: SleeperClient):
     print("\n=== Average Points by Position ===")
     for position, avg in avg_points.items():
         print(f"{position}: {avg:.2f}")
+
+def print_player_stats(client: SleeperClient, player_id: str, week=None):
+    stats = client.get_player_stats(player_id, week=week)
+    if not stats:
+        print("No stats available.")
+        return
+    
+    print(f"Stats for Player: {player_id}")
+    key_stats = {
+        "gp": "Games Played",
+        "pts_ppr": "Points (PPR)",
+        "rec": "Receptions",
+        "rec_yd": "Receiving Yards",
+        "rec_air_yd": "Air Yards",
+        "rec_tgt": "Targets",
+        "rec_td": "Receiving TDs",
+        "rush_att": "Rush Attempts",
+        "rush_yd": "Rushing Yards",
+        "rush_td": "Rushing TDs",
+        "anytime_tds": "Total TDs"
+    }
+
+    for stat_key, label in key_stats.items():
+        if stat_key in stats:
+            print(f"{label}: {stats[stat_key]}")
