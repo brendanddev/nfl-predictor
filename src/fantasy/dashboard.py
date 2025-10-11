@@ -9,8 +9,8 @@ Brendan Dileo, August 2025
 """
 
 import streamlit as st
-from client import SleeperClient
-import st_utils as stu
+from src.fantasy.client import SleeperClient
+import src.fantasy.st_utils as stu
 import time
 
 client = SleeperClient()

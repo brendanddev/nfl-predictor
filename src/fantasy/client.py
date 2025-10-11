@@ -10,7 +10,7 @@ import time
 from typing import Counter
 import requests
 import json
-from src.config import BASE_URL, ALT_URL, USER_ID, LEAGUE_ID
+from src.fantasy.config import BASE_URL, ALT_URL, USER_ID, LEAGUE_ID
 
 
 class SleeperClient:

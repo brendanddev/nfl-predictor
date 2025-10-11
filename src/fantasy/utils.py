@@ -7,7 +7,7 @@ Brendan Dileo, August 2025
 """
 
 
-from src.client import SleeperClient
+from src.fantasy.client import SleeperClient
 
 
 def print_user_info(client: SleeperClient, identifier: str):
