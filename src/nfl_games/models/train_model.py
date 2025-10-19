@@ -15,7 +15,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report, roc_auc_score
 from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
 
-# Try to import XGBoost and LightGBM, handle if not installed
+# Try to import XGBoost and LightGBM (install with: pip install xgboost lightgbm)
 try:
     import xgboost as xgb
     XGBOOST_AVAILABLE = True
@@ -73,18 +73,24 @@ def train_random_forest(X_train, y_train, X_test, y_test, tune=False):
     
     if tune:
         print("\nTuning Random Forest hyperparameters...")
+        # Better parameter grid - more conservative to avoid overfitting
         param_grid = {
-            'n_estimators': [100, 200, 300],
-            'max_depth': [10, 20, 30, None],
-            'min_samples_split': [2, 5, 10],
-            'min_samples_leaf': [1, 2, 4]
+            'n_estimators': [150, 200, 250],
+            'max_depth': [15, 20, 25],  # Narrower range around known good value
+            'min_samples_split': [5, 10, 15],  # Higher values to prevent overfitting
+            'min_samples_leaf': [2, 4, 6]  # At least 2 to prevent overfitting
         }
         
-        rf = RandomForestClassifier(random_state=42)
-        grid_search = GridSearchCV(rf, param_grid, cv=3, scoring='accuracy', n_jobs=-1, verbose=1)
+        rf = RandomForestClassifier(random_state=42, n_jobs=-1)
+        # Use stratified CV and more folds for better generalization
+        grid_search = GridSearchCV(
+            rf, param_grid, cv=5, scoring='accuracy', 
+            n_jobs=-1, verbose=1
+        )
         grid_search.fit(X_train, y_train)
         
         print(f"Best parameters: {grid_search.best_params_}")
+        print(f"Best CV score: {grid_search.best_score_:.4f}")
         model = grid_search.best_estimator_
     else:
         model = RandomForestClassifier(
@@ -173,7 +179,7 @@ def train_model(X, y, df, tune_rf=False, test_seasons=2):
         test_seasons (int): Number of recent seasons to use for testing (default=2)
         
     Returns:
-        dict: Dictionary of trained models
+        tuple: (best_model, all_models_dict, X_train, X_test, y_train, y_test)
     """
     
     # Use time-based split instead of random split
@@ -229,4 +235,4 @@ def train_model(X, y, df, tune_rf=False, test_seasons=2):
     best_model_name = results_df.index[0]
     print(f"\nBest Model: {best_model_name} with {results_df.loc[best_model_name, 'accuracy']*100:.2f}% accuracy")
     
-    return models[best_model_name], models
+    return models[best_model_name], models, X_train, X_test, y_train, y_test
