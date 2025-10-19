@@ -8,9 +8,15 @@ __pycache__/
 # Data files
 players.json
 
-# Raw data
+# Raw game data
 src/nfl_games/data 
 
-# Saved models
+# Saved game models
 src/nfl_games/saved_models
+
+# Raw player data
+src/nfl_players/data
+
+# Saved player models
+src/nfl_players/saved_models
 
