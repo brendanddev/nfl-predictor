@@ -5,6 +5,7 @@ train_model.py
 Brendan Dileo, October 2025
 """
 
+import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
@@ -24,4 +25,10 @@ def train_model(X, y):
     preds = model.predict(X_test)
     acc = accuracy_score(y_test, preds)
     print(f"Model trained! Accuracy: {acc * 100:.2f}%")
+
+    feature_importances = pd.Series(model.feature_importances_, index=X.columns)
+    feature_importances = feature_importances.sort_values(ascending=False)
+    print("\nFeature Importances:")
+    print(feature_importances)
+
     return model
