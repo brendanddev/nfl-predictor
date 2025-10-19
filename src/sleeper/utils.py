@@ -7,8 +7,7 @@ Brendan Dileo, August 2025
 """
 
 
-from src.fantasy.client import SleeperClient
-
+from src.sleeper.client import SleeperClient
 
 def print_user_info(client: SleeperClient, identifier: str):
     user = client.get_user(identifier)

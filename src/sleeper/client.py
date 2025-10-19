@@ -10,8 +10,7 @@ import time
 from typing import Counter
 import requests
 import json
-from src.fantasy.config import BASE_URL, ALT_URL, USER_ID, LEAGUE_ID
-
+from src.sleeper.config import BASE_URL, ALT_URL, USER_ID, LEAGUE_ID
 
 class SleeperClient:
     
@@ -211,7 +210,4 @@ class SleeperClient:
             pos: total_points[pos] / position_counts[pos]
             for pos in total_points
         }
-        return avg_points    
-    
-    # TODO: Implement these functions
-    # Get best performing unclaimed players
+        return avg_points

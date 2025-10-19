@@ -8,7 +8,7 @@ Brendan Dileo, August 2025
 
 
 import streamlit as st
-from src.fantasy.client import SleeperClient
+from src.sleeper.client import SleeperClient
 from collections import Counter, defaultdict
 
 @st.cache_data(ttl=600)
