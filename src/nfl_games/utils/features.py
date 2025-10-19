@@ -160,6 +160,44 @@ def calculate_home_field_advantage(df):
     return home_advantage
 
 
+def add_weather_features(df):
+    """
+    Process and add weather-related features.
+    
+    Args:
+        df (pd.DataFrame): Game data with weather columns
+        
+    Returns:
+        pd.DataFrame: DataFrame with processed weather features
+    """
+    # Temperature - fill missing with 70 (typical dome/pleasant weather)
+    df["weather_temperature"] = pd.to_numeric(df["weather_temperature"], errors='coerce').fillna(70)
+    
+    # Wind - fill missing with 0 (dome or calm)
+    df["weather_wind_mph"] = pd.to_numeric(df["weather_wind_mph"], errors='coerce').fillna(0)
+    
+    # Humidity - fill missing with 50 (neutral)
+    df["weather_humidity"] = pd.to_numeric(df["weather_humidity"], errors='coerce').fillna(50)
+    
+    # Create weather severity flags
+    df["extreme_cold"] = (df["weather_temperature"] < 32).astype(int)  # Freezing
+    df["extreme_heat"] = (df["weather_temperature"] > 85).astype(int)  # Very hot
+    df["high_wind"] = (df["weather_wind_mph"] > 15).astype(int)  # Windy
+    
+    # Parse weather detail for precipitation
+    df["weather_detail"] = df["weather_detail"].fillna("").astype(str).str.lower()
+    df["is_rainy"] = df["weather_detail"].str.contains("rain|showers", case=False).astype(int)
+    df["is_snowy"] = df["weather_detail"].str.contains("snow|flurr", case=False).astype(int)
+    
+    # Combined bad weather indicator
+    df["bad_weather"] = ((df["extreme_cold"] == 1) | 
+                         (df["high_wind"] == 1) | 
+                         (df["is_rainy"] == 1) | 
+                         (df["is_snowy"] == 1)).astype(int)
+    
+    return df
+
+
 def encode_features(df):
     """
     Prepares feature matrix (X) and target vector (y) for modeling.
@@ -167,9 +205,11 @@ def encode_features(df):
     1. Encode team names as numeric labels.
     2. Add rolling offensive/defensive stats and difference features.
     3. Calculate home field advantage.
-    4. Add interaction features.
-    5. Fill missing spread values.
-    6. Assemble final feature matrix.
+    4. Add weather features.
+    5. Add playoff and neutral site indicators.
+    6. Add interaction features.
+    7. Fill missing spread values.
+    8. Assemble final feature matrix.
 
     Args:
         df (pd.DataFrame): Raw game data
@@ -177,6 +217,7 @@ def encode_features(df):
     Returns:
         X (pd.DataFrame): Features for model training
         y (pd.Series): Target labels (home team win)
+        df (pd.DataFrame): Full dataframe for time-based splitting
     """
     
     # Encode all teams consistently
@@ -194,12 +235,27 @@ def encode_features(df):
     home_adv_dict = calculate_home_field_advantage(df)
     df["home_field_advantage"] = df["team_home"].map(home_adv_dict)
     
-    # Fill missing spread values with 0
-    df["spread_favorite"] = df["spread_favorite"].fillna(0)
+    # Add weather features
+    df = add_weather_features(df)
+    
+    # Add playoff indicator (playoff games are different)
+    df["is_playoff"] = df["schedule_playoff"].fillna(0).astype(int)
+    
+    # Add neutral site indicator (Super Bowl, London games, etc.)
+    df["is_neutral_site"] = df["stadium_neutral"].fillna(0).astype(int)
+    
+    # Fill missing spread and over/under values (convert to numeric first)
+    df["spread_favorite"] = pd.to_numeric(df["spread_favorite"], errors='coerce').fillna(0)
+    df["over_under_line"] = pd.to_numeric(df["over_under_line"], errors='coerce')
+    df["over_under_line"] = df["over_under_line"].fillna(df["over_under_line"].median())
     
     # Create interaction features
     df["spread_strength_interaction"] = df["spread_favorite"] * df["avg_points_diff"]
     df["spread_defense_interaction"] = df["spread_favorite"] * df["avg_allowed_diff"]
+    df["weather_offense_interaction"] = df["bad_weather"] * df["avg_points_diff"]
+    
+    # Over/under can predict game style (high scoring vs defensive)
+    df["over_under_normalized"] = (df["over_under_line"] - df["over_under_line"].mean()) / df["over_under_line"].std()
     
     # Select final columns for training
     feature_cols = [
@@ -223,7 +279,23 @@ def encode_features(df):
         "away_momentum",
         "momentum_diff",
         "spread_strength_interaction",
-        "spread_defense_interaction"
+        "spread_defense_interaction",
+        # Weather features
+        "weather_temperature",
+        "weather_wind_mph",
+        "weather_humidity",
+        "extreme_cold",
+        "extreme_heat",
+        "high_wind",
+        "is_rainy",
+        "is_snowy",
+        "bad_weather",
+        "weather_offense_interaction",
+        # Game context features
+        "is_playoff",
+        "is_neutral_site",
+        "over_under_line",
+        "over_under_normalized"
     ]
     
     X = df[feature_cols]
