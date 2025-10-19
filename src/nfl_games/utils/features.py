@@ -160,6 +160,58 @@ def calculate_home_field_advantage(df):
     return home_advantage
 
 
+def add_division_features(df):
+    """
+    Add division and conference rivalry features.
+    Division games are typically more competitive.
+    """
+    # NFL divisions (2002+)
+    divisions = {
+        "AFC East": ["Buffalo Bills", "Miami Dolphins", "New England Patriots", "New York Jets"],
+        "AFC North": ["Baltimore Ravens", "Cincinnati Bengals", "Cleveland Browns", "Pittsburgh Steelers"],
+        "AFC South": ["Houston Texans", "Indianapolis Colts", "Jacksonville Jaguars", "Tennessee Titans"],
+        "AFC West": ["Denver Broncos", "Kansas City Chiefs", "Las Vegas Raiders", "Los Angeles Chargers"],
+        "NFC East": ["Dallas Cowboys", "New York Giants", "Philadelphia Eagles", "Washington Commanders"],
+        "NFC North": ["Chicago Bears", "Detroit Lions", "Green Bay Packers", "Minnesota Vikings"],
+        "NFC South": ["Atlanta Falcons", "Carolina Panthers", "New Orleans Saints", "Tampa Bay Buccaneers"],
+        "NFC West": ["Arizona Cardinals", "Los Angeles Rams", "San Francisco 49ers", "Seattle Seahawks"]
+    }
+    
+    # Handle team name changes
+    team_mapping = {
+        "Washington Football Team": "Washington Commanders",
+        "Washington Redskins": "Washington Commanders",
+        "Oakland Raiders": "Las Vegas Raiders",
+        "San Diego Chargers": "Los Angeles Chargers",
+        "St. Louis Rams": "Los Angeles Rams"
+    }
+    
+    # Map teams to divisions
+    team_to_division = {}
+    for division, teams in divisions.items():
+        for team in teams:
+            team_to_division[team] = division
+    
+    # Create features
+    def get_division(team):
+        team = team_mapping.get(team, team)
+        return team_to_division.get(team, "Unknown")
+    
+    df["home_division"] = df["team_home"].apply(get_division)
+    df["away_division"] = df["team_away"].apply(get_division)
+    
+    # Same division = division rivalry
+    df["is_division_game"] = (df["home_division"] == df["away_division"]).astype(int)
+    
+    # Same conference but different division
+    df["is_conference_game"] = (
+        (df["home_division"].str[:3] == df["away_division"].str[:3]) & 
+        (df["home_division"] != df["away_division"])
+    ).astype(int)
+    
+    return df
+
+
 def add_weather_features(df):
     """
     Process and add weather-related features.
@@ -238,6 +290,10 @@ def encode_features(df):
     # Add weather features
     df = add_weather_features(df)
     
+    # Add division/conference features (OPTIONAL - may reduce accuracy slightly)
+    # Uncomment the line below to enable:
+    # df = add_division_features(df)
+    
     # Add playoff indicator (playoff games are different)
     df["is_playoff"] = df["schedule_playoff"].fillna(0).astype(int)
     
@@ -296,6 +352,9 @@ def encode_features(df):
         "is_neutral_site",
         "over_under_line",
         "over_under_normalized"
+        # Division features (commented out - can reduce accuracy)
+        # "is_division_game",
+        # "is_conference_game"
     ]
     
     X = df[feature_cols]
