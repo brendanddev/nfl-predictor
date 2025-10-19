@@ -7,3 +7,6 @@ __pycache__/
 
 # Data files
 players.json
+
+src/nfl_games/data 
+
