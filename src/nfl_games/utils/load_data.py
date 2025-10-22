@@ -94,7 +94,6 @@ def download_nflfastr_data(seasons=None, cache=True):
     
     return pbp_data
 
-
 def aggregate_team_stats(pbp_data):
     """
     Aggregate play-by-play data into game-level team statistics.
@@ -162,11 +161,6 @@ def aggregate_team_stats(pbp_data):
         'interceptions', 'fumbles_lost'
     ]
     
-    # Merge with game context
-    offense_stats = offense_stats.merge(game_context, on='game_id', how='left')
-    # Merge with game context
-    offense_stats = offense_stats.merge(game_context, on='game_id', how='left')
-    
     # Add total turnovers
     offense_stats['turnovers'] = (
         offense_stats['interceptions'] + offense_stats['fumbles_lost']
@@ -199,7 +193,7 @@ def aggregate_team_stats(pbp_data):
         'rush_epa', 'rush_success_rate', 'avg_rush_yards'
     ]
     
-    # Merge all offensive stats
+    # Merge all offensive stats (without game_context yet)
     team_stats = offense_stats.merge(
         pass_plays, on=['game_id', 'team'], how='left'
     ).merge(
@@ -235,6 +229,10 @@ def aggregate_team_stats(pbp_data):
     team_stats['def_turnovers_created'] = (
         team_stats['def_interceptions'] + team_stats['forced_fumbles']
     )
+    
+    # **CRITICAL FIX: Merge game_context ONCE at the very end**
+    # This was being merged twice in the original code, causing duplicate columns
+    team_stats = team_stats.merge(game_context, on='game_id', how='left')
     
     print(f"✓ Aggregated stats for {len(team_stats)} team-games")
     
