@@ -4,8 +4,7 @@ features.py
 Defines feature engineering functions for NFL game data.
 
 Handles creating additional features from raw NFL game data, including rolling statistics for 
-offense, defense, and team performance trends. These features are used as input to the machine 
-learning model.
+offense, defense, and team performance trends.
 
 Brendan Dileo, October 2025
 """
@@ -131,6 +130,129 @@ def add_rolling_features(df, window=ROLLING_WINDOW):
     return df
 
 
+def add_rolling_epa_features(df, window=ROLLING_WINDOW):
+    """
+    Add rolling EPA and success rate features for each team.
+    
+    These are more predictive than basic point totals because they account
+    for game context and opponent strength.
+    
+    Args:
+        df: DataFrame with nflfastR stats (home_epa_per_play, etc.)
+        window: Number of games for rolling average
+        
+    Returns:
+        pd.DataFrame: DataFrame with rolling EPA features
+    """
+    
+    # Sort by date
+    df = df.sort_values("schedule_date").copy()
+    
+    # Initialize columns for rolling EPA stats
+    epa_cols = [
+        "home_rolling_epa", "away_rolling_epa",
+        "home_rolling_pass_epa", "away_rolling_pass_epa",
+        "home_rolling_rush_epa", "away_rolling_rush_epa",
+        "home_rolling_success", "away_rolling_success",
+        "home_rolling_def_epa", "away_rolling_def_epa"
+    ]
+    
+    for col in epa_cols:
+        df[col] = np.nan
+    
+    # Get unique teams
+    teams = pd.concat([df["team_home"], df["team_away"]]).unique()
+    
+    print(f"Calculating rolling EPA features for {len(teams)} teams...")
+    
+    for team in teams:
+        # Get all games for this team
+        home_mask = df["team_home"] == team
+        away_mask = df["team_away"] == team
+        team_mask = home_mask | away_mask
+        
+        team_indices = df[team_mask].index
+        
+        # Extract EPA stats for this team (whether home or away)
+        epa_per_play = np.where(
+            home_mask, df["home_epa_per_play"],
+            np.where(away_mask, df["away_epa_per_play"], np.nan)
+        )
+        
+        pass_epa = np.where(
+            home_mask, df["home_pass_epa"],
+            np.where(away_mask, df["away_pass_epa"], np.nan)
+        )
+        
+        rush_epa = np.where(
+            home_mask, df["home_rush_epa"],
+            np.where(away_mask, df["away_rush_epa"], np.nan)
+        )
+        
+        success_rate = np.where(
+            home_mask, df["home_success_rate"],
+            np.where(away_mask, df["away_success_rate"], np.nan)
+        )
+        
+        def_epa_allowed = np.where(
+            home_mask, df["home_def_epa_allowed"],
+            np.where(away_mask, df["away_def_epa_allowed"], np.nan)
+        )
+        
+        # Create series for this team
+        team_epa = pd.Series(epa_per_play[team_mask], index=team_indices)
+        team_pass_epa = pd.Series(pass_epa[team_mask], index=team_indices)
+        team_rush_epa = pd.Series(rush_epa[team_mask], index=team_indices)
+        team_success = pd.Series(success_rate[team_mask], index=team_indices)
+        team_def_epa = pd.Series(def_epa_allowed[team_mask], index=team_indices)
+        
+        # Calculate rolling averages (shift by 1 to avoid lookahead bias)
+        rolling_epa = team_epa.shift(1).rolling(window, min_periods=1).mean()
+        rolling_pass_epa = team_pass_epa.shift(1).rolling(window, min_periods=1).mean()
+        rolling_rush_epa = team_rush_epa.shift(1).rolling(window, min_periods=1).mean()
+        rolling_success = team_success.shift(1).rolling(window, min_periods=1).mean()
+        rolling_def_epa = team_def_epa.shift(1).rolling(window, min_periods=1).mean()
+        
+        # Map back to dataframe
+        df.loc[home_mask & team_mask, "home_rolling_epa"] = rolling_epa[home_mask & team_mask].values
+        df.loc[home_mask & team_mask, "home_rolling_pass_epa"] = rolling_pass_epa[home_mask & team_mask].values
+        df.loc[home_mask & team_mask, "home_rolling_rush_epa"] = rolling_rush_epa[home_mask & team_mask].values
+        df.loc[home_mask & team_mask, "home_rolling_success"] = rolling_success[home_mask & team_mask].values
+        df.loc[home_mask & team_mask, "home_rolling_def_epa"] = rolling_def_epa[home_mask & team_mask].values
+        
+        df.loc[away_mask & team_mask, "away_rolling_epa"] = rolling_epa[away_mask & team_mask].values
+        df.loc[away_mask & team_mask, "away_rolling_pass_epa"] = rolling_pass_epa[away_mask & team_mask].values
+        df.loc[away_mask & team_mask, "away_rolling_rush_epa"] = rolling_rush_epa[away_mask & team_mask].values
+        df.loc[away_mask & team_mask, "away_rolling_success"] = rolling_success[away_mask & team_mask].values
+        df.loc[away_mask & team_mask, "away_rolling_def_epa"] = rolling_def_epa[away_mask & team_mask].values
+    
+    # Fill NaN values with league averages
+    df["home_rolling_epa"] = df["home_rolling_epa"].fillna(0)
+    df["away_rolling_epa"] = df["away_rolling_epa"].fillna(0)
+    df["home_rolling_pass_epa"] = df["home_rolling_pass_epa"].fillna(0)
+    df["away_rolling_pass_epa"] = df["away_rolling_pass_epa"].fillna(0)
+    df["home_rolling_rush_epa"] = df["home_rolling_rush_epa"].fillna(0)
+    df["away_rolling_rush_epa"] = df["away_rolling_rush_epa"].fillna(0)
+    df["home_rolling_success"] = df["home_rolling_success"].fillna(0.5)
+    df["away_rolling_success"] = df["away_rolling_success"].fillna(0.5)
+    df["home_rolling_def_epa"] = df["home_rolling_def_epa"].fillna(0)
+    df["away_rolling_def_epa"] = df["away_rolling_def_epa"].fillna(0)
+    
+    # Create difference features (home - away perspective)
+    df["epa_diff"] = df["home_rolling_epa"] - df["away_rolling_epa"]
+    df["pass_epa_diff"] = df["home_rolling_pass_epa"] - df["away_rolling_pass_epa"]
+    df["rush_epa_diff"] = df["home_rolling_rush_epa"] - df["away_rolling_rush_epa"]
+    df["success_rate_diff"] = df["home_rolling_success"] - df["away_rolling_success"]
+    df["def_epa_diff"] = df["away_rolling_def_epa"] - df["home_rolling_def_epa"]  # Lower is better for defense
+    
+    # Create interaction features with spread
+    df["spread_epa_interaction"] = df["spread_favorite"] * df["epa_diff"]
+    
+    print("✓ Rolling EPA features added!")
+    
+    return df
+
+
 def calculate_home_field_advantage(df):
     """
     Calculate historical home field advantage for each team.
@@ -158,58 +280,6 @@ def calculate_home_field_advantage(df):
         home_advantage[team] = home_win_pct - away_win_pct
     
     return home_advantage
-
-
-def add_division_features(df):
-    """
-    Add division and conference rivalry features.
-    Division games are typically more competitive.
-    """
-    # NFL divisions (2002+)
-    divisions = {
-        "AFC East": ["Buffalo Bills", "Miami Dolphins", "New England Patriots", "New York Jets"],
-        "AFC North": ["Baltimore Ravens", "Cincinnati Bengals", "Cleveland Browns", "Pittsburgh Steelers"],
-        "AFC South": ["Houston Texans", "Indianapolis Colts", "Jacksonville Jaguars", "Tennessee Titans"],
-        "AFC West": ["Denver Broncos", "Kansas City Chiefs", "Las Vegas Raiders", "Los Angeles Chargers"],
-        "NFC East": ["Dallas Cowboys", "New York Giants", "Philadelphia Eagles", "Washington Commanders"],
-        "NFC North": ["Chicago Bears", "Detroit Lions", "Green Bay Packers", "Minnesota Vikings"],
-        "NFC South": ["Atlanta Falcons", "Carolina Panthers", "New Orleans Saints", "Tampa Bay Buccaneers"],
-        "NFC West": ["Arizona Cardinals", "Los Angeles Rams", "San Francisco 49ers", "Seattle Seahawks"]
-    }
-    
-    # Handle team name changes
-    team_mapping = {
-        "Washington Football Team": "Washington Commanders",
-        "Washington Redskins": "Washington Commanders",
-        "Oakland Raiders": "Las Vegas Raiders",
-        "San Diego Chargers": "Los Angeles Chargers",
-        "St. Louis Rams": "Los Angeles Rams"
-    }
-    
-    # Map teams to divisions
-    team_to_division = {}
-    for division, teams in divisions.items():
-        for team in teams:
-            team_to_division[team] = division
-    
-    # Create features
-    def get_division(team):
-        team = team_mapping.get(team, team)
-        return team_to_division.get(team, "Unknown")
-    
-    df["home_division"] = df["team_home"].apply(get_division)
-    df["away_division"] = df["team_away"].apply(get_division)
-    
-    # Same division = division rivalry
-    df["is_division_game"] = (df["home_division"] == df["away_division"]).astype(int)
-    
-    # Same conference but different division
-    df["is_conference_game"] = (
-        (df["home_division"].str[:3] == df["away_division"].str[:3]) & 
-        (df["home_division"] != df["away_division"])
-    ).astype(int)
-    
-    return df
 
 
 def add_weather_features(df):
@@ -256,12 +326,13 @@ def encode_features(df):
     Steps:
     1. Encode team names as numeric labels.
     2. Add rolling offensive/defensive stats and difference features.
-    3. Calculate home field advantage.
-    4. Add weather features.
-    5. Add playoff and neutral site indicators.
-    6. Add interaction features.
-    7. Fill missing spread values.
-    8. Assemble final feature matrix.
+    3. Add rolling EPA features if nflfastR data is available.
+    4. Calculate home field advantage.
+    5. Add weather features.
+    6. Add playoff and neutral site indicators.
+    7. Add interaction features.
+    8. Fill missing spread values.
+    9. Assemble final feature matrix.
 
     Args:
         df (pd.DataFrame): Raw game data
@@ -283,16 +354,20 @@ def encode_features(df):
     # Add rolling stats & difference features
     df = add_rolling_features(df)
     
+    # Add rolling EPA features if nflfastR data is available
+    has_nflfastr = 'home_epa_per_play' in df.columns
+    if has_nflfastr:
+        print("\n✓ nflfastR data detected - adding EPA features")
+        df = add_rolling_epa_features(df)
+    else:
+        print("\n⚠ No nflfastR data - training without EPA features")
+    
     # Calculate home field advantage
     home_adv_dict = calculate_home_field_advantage(df)
     df["home_field_advantage"] = df["team_home"].map(home_adv_dict)
     
     # Add weather features
     df = add_weather_features(df)
-    
-    # Add division/conference features (OPTIONAL - may reduce accuracy slightly)
-    # Uncomment the line below to enable:
-    # df = add_division_features(df)
     
     # Add playoff indicator (playoff games are different)
     df["is_playoff"] = df["schedule_playoff"].fillna(0).astype(int)
@@ -313,7 +388,7 @@ def encode_features(df):
     # Over/under can predict game style (high scoring vs defensive)
     df["over_under_normalized"] = (df["over_under_line"] - df["over_under_line"].mean()) / df["over_under_line"].std()
     
-    # Select final columns for training
+    # Select final columns for training - BASE FEATURES
     feature_cols = [
         "home_team_encoded",
         "away_team_encoded",
@@ -352,10 +427,40 @@ def encode_features(df):
         "is_neutral_site",
         "over_under_line",
         "over_under_normalized"
-        # Division features (commented out - can reduce accuracy)
-        # "is_division_game",
-        # "is_conference_game"
     ]
+    
+    # Add EPA features if available
+    if has_nflfastr:
+        epa_feature_cols = [
+            # Rolling EPA features (most important)
+            "home_rolling_epa",
+            "away_rolling_epa",
+            "epa_diff",
+            
+            # Pass vs Rush EPA
+            "home_rolling_pass_epa",
+            "away_rolling_pass_epa",
+            "pass_epa_diff",
+            
+            "home_rolling_rush_epa",
+            "away_rolling_rush_epa",
+            "rush_epa_diff",
+            
+            # Success rate
+            "home_rolling_success",
+            "away_rolling_success",
+            "success_rate_diff",
+            
+            # Defensive EPA
+            "home_rolling_def_epa",
+            "away_rolling_def_epa",
+            "def_epa_diff",
+            
+            # Interactions
+            "spread_epa_interaction"
+        ]
+        feature_cols.extend(epa_feature_cols)
+        print(f"✓ Added {len(epa_feature_cols)} EPA features to model")
     
     X = df[feature_cols]
     y = df["home_team_won"]
