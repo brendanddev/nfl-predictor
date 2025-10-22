@@ -3,8 +3,8 @@
 train_model.py
 Trains multiple models on NFL game data with proper time-based validation.
 
-Handles splitting data chronologically, training multiple classifiers (Random Forest, XGBoost, 
-LightGBM), hyperparameter tuning, and evaluating model accuracy.
+Handles splitting data chronologically, training multiple classifiers (Random Forest, XGBoost, LightGBM), 
+hyperparameter tuning, and evaluating model accuracy.
 
 Brendan Dileo, October 2025
 """
