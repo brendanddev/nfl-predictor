@@ -6,7 +6,7 @@ An improved NFL game outcome prediction model using multiple classifiers.
 Brendan Dileo, October 2025
 """
 
-from utils.load_data import load_data
+from utils.load_data import load_data_with_nflfastr
 from utils.preprocess import preprocess
 from utils.features import encode_features
 from models.train_model import train_model
@@ -18,7 +18,7 @@ import pandas as pd
 
 def main():
     print("="*60)
-    print("NFL Game Predictor - Improved Version")
+    print("NFL Game Predictor - WITH nflfastR EPA DATA")
     print("="*60)
     
     # Check for existing saved models
@@ -33,7 +33,11 @@ def main():
             prediction_model, encoder = load_model(latest_model)
             
             # Still need to load data for predictions
-            df = load_data()
+            df = load_data_with_nflfastr(
+                seasons=list(range(2015, 2025)),
+                cache=True,
+                use_nflfastr=True
+            )
             if df is None:
                 return
             df = preprocess(df)
@@ -45,10 +49,27 @@ def main():
             return
     
     # Train new model
-    print("\nTraining new model...")
+    print("\nTraining new model with nflfastR data...")
     
-    # Load data
-    df = load_data()
+    # Ask if user wants to use nflfastR data
+    print("\n" + "="*60)
+    print("nflfastR DATA OPTIONS")
+    print("="*60)
+    print("nflfastR provides advanced EPA (Expected Points Added) metrics")
+    print("- First download takes 2-5 minutes (~300MB)")
+    print("- Subsequent runs are fast (uses cache)")
+    print("- Expected accuracy boost: +3-5%")
+    
+    use_nflfastr = input("\nLoad nflfastR EPA data? (y/n, default=y): ").strip().lower()
+    use_nflfastr = use_nflfastr != 'n'
+    
+    # Load data with or without nflfastR
+    df = load_data_with_nflfastr(
+        seasons=list(range(2015, 2025)),
+        cache=True,
+        use_nflfastr=use_nflfastr
+    )
+    
     if df is None:
         return
     
@@ -58,8 +79,26 @@ def main():
     # Feature engineering (returns df for time-based splitting)
     X, y, df_processed = encode_features(df)
     
-    print(f"\nTotal features: {X.shape[1]}")
-    print(f"Feature names: {list(X.columns)}")
+    # If we have EPA data, filter to games with EPA features (2015+)
+    if use_nflfastr and 'home_rolling_epa' in df_processed.columns:
+        has_epa = df_processed['home_rolling_epa'].notna()
+        
+        if has_epa.sum() > 0:
+            print(f"\n✓ Filtering to {has_epa.sum():,} games with EPA data (2015+)")
+            X = X[has_epa]
+            y = y[has_epa]
+            df_processed = df_processed[has_epa]
+        else:
+            print("\n⚠ No EPA data found. Training without EPA features.")
+    
+    print(f"\n{'='*60}")
+    print(f"FEATURE SUMMARY")
+    print(f"{'='*60}")
+    print(f"Total features: {X.shape[1]}")
+    print(f"Total games: {len(X):,}")
+    print(f"\nFeature names:")
+    for i, col in enumerate(X.columns, 1):
+        print(f"  {i:2d}. {col}")
     
     # Create encoder for predictions
     all_teams = pd.concat([df["team_home"], df["team_away"]]).unique()
@@ -67,7 +106,11 @@ def main():
     encoder.fit(all_teams)
     
     # Train models (set tune_rf=True to enable hyperparameter tuning - takes longer)
-    # Use test_seasons=2 for more reliable testing (tests on 2024-2025 instead of just 2025)
+    # Use test_seasons=2 for more reliable testing (tests on 2023-2024 instead of just 2024)
+    print(f"\n{'='*60}")
+    print("TRAINING MODELS")
+    print(f"{'='*60}")
+    
     best_model, all_models, X_train, X_test, y_train, y_test = train_model(
         X, y, df_processed, tune_rf=False, test_seasons=2
     )
@@ -75,14 +118,14 @@ def main():
     # Create ensemble model if multiple models available
     if len(all_models) > 1:
         ensemble_model = create_ensemble(all_models, X_test, y_test)
-        print("\nUsing ensemble model for predictions (combines all models)")
+        print("\n✓ Using ensemble model for predictions (combines all models)")
         prediction_model = ensemble_model
     else:
-        print(f"\nUsing {list(all_models.keys())[0]} for predictions")
+        print(f"\n✓ Using {list(all_models.keys())[0]} for predictions")
         prediction_model = best_model
     
     print("\n" + "="*60)
-    print("Training Complete!")
+    print("TRAINING COMPLETE!")
     print("="*60)
     
     # Ask to save model
